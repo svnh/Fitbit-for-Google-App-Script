@@ -25,15 +25,7 @@ var CONSUMER_SECRET_PROPERTY_NAME = "fitbitConsumerSecret";
  * @type String[]
  * @const
  */
-var LOGGABLES = [ "activities/log/steps", "activities/log/distance",
-    "activities/log/activeScore", "activities/log/activityCalories",
-    "activities/log/calories", "foods/log/caloriesIn",
-    "activities/log/minutesSedentary",
-    "activities/log/minutesLightlyActive",
-    "activities/log/minutesFairlyActive",
-    "activities/log/minutesVeryActive", "sleep/timeInBed",
-    "sleep/minutesAsleep", "sleep/minutesAwake", "sleep/awakeningsCount",
-    "body/weight", "body/bmi", "body/fat", ];
+var LOGGABLES = [ "activities/log/steps" ];
 
 function refreshTimeSeries() {
   // if the user has never configured ask him to do it here
@@ -42,21 +34,9 @@ function refreshTimeSeries() {
     return;
   }
 
-  Logger.log('Refreshing timeseries data...');
   var user = authorize();
   var doc = SpreadsheetApp.getActiveSpreadsheet();
   doc.setFrozenRows(2);
-  // header rows
-  doc.getRange("a1").setValue(user.displayName);
-  doc.getRange("a1").setComment("DOB:" + user.dateOfBirth);
-  doc.getRange("b1").setValue(
-      user.country);
-  // add the loggables for the last update
-  doc.getRange("c1").setValue("Loggables:");
-  doc.getRange("c1").setComment(getLoggables());
-  // period for the last update
-  doc.getRange("d1").setValue("Period: " + getPeriod());
-  doc.getRange("e1").setValue(user.avatar);
 
   var options = {
     "oAuthServiceName" : "fitbit",
@@ -68,41 +48,38 @@ function refreshTimeSeries() {
   };
 
   // get inspired here http://wiki.fitbit.com/display/API/API-Get-Time-Series
-  var activities = getLoggables();
-  for ( var activity in activities) {
-    Logger.log('Refreshing ' + activity)
-    var dateString = "today";
-    var currentActivity = activities[activity];
-    try {
-      var result = UrlFetchApp.fetch("http://api.fitbit.com/1/user/-/"
-          + currentActivity + "/date/" + dateString + "/"
-          + getPeriod() + ".json", options);
-    } catch (exception) {
-      Logger.log(exception);
-    }
-    var o = Utilities.jsonParse(result.getContentText());
+  try {
+    var result = UrlFetchApp.fetch("http://api.fitbit.com/1/user/-/friends/leaderboard.json", options);
+  } catch (exception) {
+    Logger.log(exception);
+  }
+  var o = Utilities.jsonParse(result.getContentText());
 
-    // set title
-    var titleCell = doc.getRange("a2");
-    titleCell.setValue("Date");
-    var cell = doc.getRange('a3');
+  // set title
+  var titleCell = doc.getRange("a1");
+  doc.getRange("a1").setValue("Rank");
+  doc.getRange("b1").setValue("Friend Name");
+  doc.getRange("c1").setValue("Total Last 7 Days")
+  doc.getRange("d1").setValue("Average Last 7 Days")
+  var cell = doc.getRange('a2');
 
-    // fill data
-    var index = 0;
-    for ( var i in o) {
-      // set title for this column
-      var title = i.substring(i.lastIndexOf('-') + 1);
-      titleCell.offset(0, 1 + activity * 1.0).setValue(title);
+  // fill data
+  var index = 0;
+  for ( var i in o) {
+    // set title for this column
+    var title = i.substring(i.lastIndexOf('-') + 1);
 
-      var row = o[i];
-      for ( var j in row) {
-        var val = row[j];
-        cell.offset(index, 0).setValue(val["dateTime"]);
-        // set the date index
-        cell.offset(index, 1 + activity * 1.0).setValue(Number(val["value"]));
-        // set the value index index
-        index++;
-      }
+    var row = o[i];
+    for ( var j in row) {
+      var val = row[j];
+      cell.offset(index, 0).setValue(val.rank.steps);
+      cell.offset(index, 1).setValue(val.user.displayName);
+      // set the date index
+      cell.offset(index, 2).setValue(val.summary.steps);
+      cell.offset(index, 3).setValue(val.average.steps);
+      // cell.offset(index, 4).setValue(val);
+      // set the value index index
+      index++;
     }
   }
 }
@@ -229,30 +206,6 @@ function renderFitbitConfigurationDialog() {
   listPanel.setWidget(1, 1, consumerKey);
   listPanel.setWidget(2, 0, consumerSecretLabel);
   listPanel.setWidget(2, 1, consumerSecret);
-
-  // add checkboxes to select loggables
-  var loggables = app.createListBox(true).setId("loggables").setName("loggables");
-  loggables.setVisibleItemCount(3);
-  for ( var resource in LOGGABLES) {
-    loggables.addItem(LOGGABLES[resource]);
-  }
-  listPanel.setWidget(3, 0, app.createLabel("Resources:"));
-  listPanel.setWidget(3, 1, loggables);
-
-  var period = app.createListBox(false).setId("period").setName("period");
-  period.setVisibleItemCount(1);
-  // add valid timeperiods
-  period.addItem('1d');
-  period.addItem('7d');
-  period.addItem('30d');
-  period.addItem('1w');
-  period.addItem('1m');
-  period.addItem('3m');
-  period.addItem('6m');
-  period.addItem('1y');
-  period.addItem('max');
-  listPanel.setWidget(4, 0, app.createLabel("Period:"));
-  listPanel.setWidget(4, 1, period);
 
   // Ensure that all form fields get sent along to the handler
   saveHandler.addCallbackElement(listPanel);
