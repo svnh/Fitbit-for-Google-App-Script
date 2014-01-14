@@ -1,25 +1,15 @@
 This little script runs in the Google App Script environment.
 
-Specifically it runs in [Googles Spreadsheets][0].  It lets you suck down your fitbit data and the do all kinds of analysis.  It's also an easy way to get started with the fitbit API.
+Specifically it runs in [Googles Spreadsheets][0].  It lets you suck down your Fitbit data and the do all kinds of analysis.  It's also an easy way to get started with the Fitbit API.
 
 Sadly to get started is a bit of a pain.
+First you need to create a Fitbit API key and secret.
 
 1. Create a new google spreadsheet
-2. Go to Tools->Script Editor
-3. Replace the template with fitbit.js
-4. Run the poorly named 'renderFitbitConfigurationDialog' and enter your consumer key and secret.  You may need to run this twice as the first time it will ask you to authorize the script.
-5. enter your credentials
-6. Run the "Authorize" script -- this will run through the oauth dance.
-7. Run the 'refreshTimeSeries" script to get your data
-8. Profit!
-
-Want to help?  here are some ideas to enhance this
-
-1.  Get smarter about how long a time series to pull down -- only pull down newer data
-2.  Make a template with interesting data or graphs and share it.
-
-I've submitted this to google to include int he script gallery so it might get easier eventually.
-
-Enjoy and let me know any suggestions/feedback.
-
-[0]: http://docs.google.com
+2. Go to Tools->Script Editor->Create Script for Spreadsheet. This will open the Script Editor in another tab.
+3. Replace the template with fitbit.js and press the save button (the icon looks like a floppy disk)
+4. Select function 'renderFitbitConfigurationDialog' and the press play to run the function. You will need to authorize your account. Then Go to the tab containing your spreadsheet. There should be a dialog box where you can enter your consumer key and secret.
+5. Enter your credentials
+6. Run the "authorize" function -- this will run through the oauth dance.
+7. Run the "refreshTimeSeries" function to get your data into your spreadsheet.
+8. Export as CSV to use in D3 graphs. 

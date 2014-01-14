@@ -1,34 +1,14 @@
 // This script will pull down your fitbit data
 // and push it into a spreadsheet
-// Units are metric (kg, km) unless otherwise noted
-// Suggestions/comments/improvements?  Let me know loghound@gmail.com
-//
-/**
- * Key of ScriptProperty for Firtbit consumer key.
- * 
- * @type {String}
- * @const
- */
+
 var CONSUMER_KEY_PROPERTY_NAME = "fitbitConsumerKey";
 
-/**
- * Key of ScriptProperty for Fitbit consumer secret.
- * 
- * @type {String}
- * @const
- */
 var CONSUMER_SECRET_PROPERTY_NAME = "fitbitConsumerSecret";
 
-/**
- * Default loggable resources.
- * 
- * @type String[]
- * @const
- */
 var LOGGABLES = [ "activities/log/steps" ];
 
 function refreshTimeSeries() {
-  // if the user has never configured ask him to do it here
+  // if the user has never configured ask them to do it here
   if (!isConfigured()) {
     renderFitbitConfigurationDialog();
     return;
@@ -47,7 +27,6 @@ function refreshTimeSeries() {
     }
   };
 
-  // get inspired here http://wiki.fitbit.com/display/API/API-Get-Time-Series
   try {
     var result = UrlFetchApp.fetch("http://api.fitbit.com/1/user/-/friends/leaderboard.json", options);
   } catch (exception) {
@@ -58,9 +37,9 @@ function refreshTimeSeries() {
   // set title
   var titleCell = doc.getRange("a1");
   doc.getRange("a1").setValue("Rank");
-  doc.getRange("b1").setValue("Friend Name");
-  doc.getRange("c1").setValue("Total Last 7 Days")
-  doc.getRange("d1").setValue("Average Last 7 Days")
+  doc.getRange("b1").setValue("Friend");
+  doc.getRange("c1").setValue("Total")
+  doc.getRange("d1").setValue("Average")
   var cell = doc.getRange('a2');
 
   // fill data
@@ -74,11 +53,8 @@ function refreshTimeSeries() {
       var val = row[j];
       cell.offset(index, 0).setValue(val.rank.steps);
       cell.offset(index, 1).setValue(val.user.displayName);
-      // set the date index
       cell.offset(index, 2).setValue(val.summary.steps);
       cell.offset(index, 3).setValue(val.average.steps);
-      // cell.offset(index, 4).setValue(val);
-      // set the value index index
       index++;
     }
   }
@@ -113,20 +89,6 @@ function setConsumerKey(key) {
  */
 function setLoggables(loggable) {
   ScriptProperties.setProperty("loggables", loggable);
-}
-/**
- * Returns the loggable resources as String[]
- * 
- * @return String[] loggable resources
- */
-function getLoggables() {
-  var loggable = ScriptProperties.getProperty("loggables");
-  if (loggable == null) {
-    loggable = LOGGABLES;
-  } else {
-    loggable = loggable.split(',');
-  }
-  return loggable;
 }
 
 function setPeriod(period) {
@@ -238,8 +200,6 @@ function authorize() {
   var o = Utilities.jsonParse(result.getContentText());
 
   return o.user;
-  // options are dateOfBirth, nickname, state, city, fullName, etc. see
-  // http://wiki.fitbit.com/display/API/API-Get-User-Info
 }
 
 /** When the spreadsheet is opened, add a Fitbit menu. */
@@ -258,32 +218,4 @@ function onOpen() {
 function onInstall() {
   onOpen();
   // put the menu when script is installed
-}
-
-function dump(arr, level) {
-  var dumped_text = "";
-  if (!level)
-    level = 0;
-
-  // The padding given at the beginning of the line.
-  var level_padding = "";
-  for ( var j = 0; j < level + 1; j++)
-    level_padding += "  ";
-
-  if (typeof (arr) == 'object') { // Array/Hashes/Objects
-    for ( var item in arr) {
-      var value = arr[item];
-
-      if (typeof (value) == 'object') { // If it is an array,
-        dumped_text += level_padding + "'" + item + "' ...\n";
-        dumped_text += dump(value, level + 1);
-      } else {
-        dumped_text += level_padding + "'" + item + "' => \"" + value
-            + "\"\n";
-      }
-    }
-  } else { // Stings/Chars/Numbers etc.
-    dumped_text = "===>" + arr + "<===(" + typeof (arr) + ")";
-  }
-  return dumped_text;
 }

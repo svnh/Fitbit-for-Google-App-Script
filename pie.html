@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<style>
- 
-  body {
-    font: 10px sans-serif;
-  }
+  <style>
    
-  .arc path {
-    stroke: #fff;
-  }
- 
-</style>
+    body {
+      font: 10px sans-serif;
+    }
+     
+    .arc path {
+      stroke: #fff;
+    }
+   
+  </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
@@ -37,7 +37,6 @@
       .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
    
   d3.csv("friends.csv", function(error, data) {
-   
     data.forEach(function(d) {
       d.Total = +d.Total;
     });
@@ -55,10 +54,7 @@
         .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
         .attr("dy", ".35em")
         .style("text-anchor", "middle")
-        .text(function(d){ 
-          console.log(d)
-          return d.data.Friend + ": " + d.value });
-   
+        .text(function(d){ return d.data.Friend + ": " + d.value });
   });
  
 </script>
